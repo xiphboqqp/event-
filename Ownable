@@ -1,0 +1,68 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract EnhancedStorageETH is ERC20, Ownable {
+    string public storedData;
+    uint256 public creationTimestamp;
+    bool public isLocked;
+
+    event DataStored(address indexed user, string data);
+    event DataDeleted(address indexed deleter);
+    event TokensMinted(address indexed to, uint256 amount);
+
+    modifier notLocked() {
+        require(!isLocked, "Contract is locked and data cannot be modified");
+        _;
+    }
+
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        uint256 initialSupply
+    ) ERC20(_name, _symbol) {
+        _mint(msg.sender, initialSupply);
+        creationTimestamp = block.timestamp;
+        isLocked = false;
+    }
+
+    function set(string memory newData) external notLocked {
+        storedData = newData;
+        emit DataStored(msg.sender, newData);
+    }
+
+    function get() external view returns (string memory) {
+        return storedData;
+    }
+
+    function deleteData() external onlyOwner notLocked {
+        delete storedData;
+        emit DataDeleted(msg.sender);
+    }
+
+    function lockContract() external onlyOwner {
+        isLocked = true;
+    }
+
+    function unlockContract() external onlyOwner {
+        isLocked = false;
+    }
+
+    function mintTokens(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
+        emit TokensMinted(to, amount);
+    }
+
+    function transferTokens(address tokenAddress, address to, uint256 amount) external onlyOwner {
+        IERC20(tokenAddress).transfer(to, amount);
+    }
+
+    // Function to upgrade the contract
+    function upgradeContract(address newContract) external onlyOwner {
+        // Perform necessary steps for upgrading, if any
+        selfdestruct(payable(newContract));
+    }
+}
