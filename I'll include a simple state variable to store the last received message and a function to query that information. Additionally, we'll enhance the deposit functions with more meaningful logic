@@ -1,0 +1,53 @@
+# ContractA.starknet
+
+# State variable to store the last received message
+lastReceivedMessageA: int128
+
+@public
+@payable
+def deposit(value: int128):
+    # Enhance deposit logic, e.g., update state or perform additional actions
+    self.lastReceivedMessageA = value
+    # Handle deposit logic, e.g., update balance or perform other actions
+    pass
+
+@public
+def sendToB(message: int):
+    # Call ContractB's receiveMessage method to send a message
+    invoke_contract("0xContractBAddress", "receiveMessage(uint256)", message)
+
+@public
+@view
+def getLastReceivedMessageA() -> int128:
+    # Query the last received message
+    return self.lastReceivedMessageA
+
+
+# ContractB.starknet
+
+# State variable to store the last received message
+lastReceivedMessageB: int128
+
+@public
+@payable
+def deposit(value: int128):
+    # Enhance deposit logic, e.g., update state or perform additional actions
+    self.lastReceivedMessageB = value
+    # Handle deposit logic, e.g., update balance or perform other actions
+    pass
+
+@public
+def receiveMessage(message: int):
+    # Handle receiving message logic
+    self.lastReceivedMessageB = message
+
+@public
+def sendToA(message: int):
+    # Call ContractA's receiveMessage method to send a message
+    invoke_contract("0xContractAAddress", "receiveMessage(uint256)", message)
+
+@public
+@view
+def getLastReceivedMessageB() -> int128:
+    # Query the last received message
+    return self.lastReceivedMessageB
